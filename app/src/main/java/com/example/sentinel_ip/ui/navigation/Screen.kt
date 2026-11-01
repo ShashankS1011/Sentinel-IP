@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
+    object Splash : Screen("splash", "Splash", Icons.Default.Security)
     object Check : Screen("check", "Audit IP", Icons.Default.Security)
     object Blacklist : Screen("blacklist", "Radar", Icons.Default.Radar)
     object Subnet : Screen("subnet", "Subnet", Icons.Default.Hub)
