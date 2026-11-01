@@ -27,6 +27,7 @@ import com.example.sentinel_ip.ui.screens.CheckScreen
 import com.example.sentinel_ip.ui.screens.HistoryScreen
 import com.example.sentinel_ip.ui.screens.ReportScreen
 import com.example.sentinel_ip.ui.screens.SettingsDialog
+import com.example.sentinel_ip.ui.screens.SplashScreen
 import com.example.sentinel_ip.ui.screens.SubnetScreen
 import com.example.sentinel_ip.ui.theme.SentinelIPTheme
 import com.example.sentinel_ip.ui.viewmodel.SentinelViewModel
@@ -41,7 +42,15 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SentinelIPTheme {
-                SentinelApp(viewModel = viewModel)
+                var isSplashActive by remember { mutableStateOf(true) }
+
+                if (isSplashActive) {
+                    SplashScreen(
+                        onSplashFinished = { isSplashActive = false }
+                    )
+                } else {
+                    SentinelApp(viewModel = viewModel)
+                }
             }
         }
     }
