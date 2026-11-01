@@ -1,5 +1,6 @@
 package com.example.sentinel_ip.ui.screens
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Category
@@ -29,7 +31,7 @@ import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.VpnLock
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -50,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -61,7 +64,6 @@ import com.example.sentinel_ip.data.model.ReportItem
 import com.example.sentinel_ip.ui.components.StatCard
 import com.example.sentinel_ip.ui.components.StatusBadge
 import com.example.sentinel_ip.ui.components.ThreatGauge
-import com.example.sentinel_ip.ui.components.getThreatColor
 import com.example.sentinel_ip.ui.viewmodel.SentinelViewModel
 import com.example.sentinel_ip.ui.viewmodel.UiState
 
@@ -72,7 +74,9 @@ fun CheckScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val checkState by viewModel.checkState.collectAsState()
-    val bookmarks by viewModel.bookmarks.collectAsState()
+    val bookmarks by viewModel.roomBookmarks.collectAsState()
+    val resolvedTargetBanner by viewModel.resolvedTargetBanner.collectAsState()
+    val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
@@ -87,7 +91,7 @@ fun CheckScreen(
             value = searchQuery,
             onValueChange = { searchQuery = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Enter IPv4 or IPv6 (e.g. 118.25.6.39)") },
+            placeholder = { Text("Enter IPv4, IPv6, or Domain (e.g. badhost.ru)") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
@@ -125,6 +129,36 @@ fun CheckScreen(
             shape = RoundedCornerShape(12.dp)
         )
 
+        // Domain Resolution Banner
+        resolvedTargetBanner?.let { target ->
+            Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Dns,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Domain '${target.query}' resolved to ${target.resolvedIp}",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
         when (val state = checkState) {
@@ -150,7 +184,7 @@ fun CheckScreen(
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "Search any IP address to check threat confidence scores, geolocation, ISP, Tor node status, and attack history.",
+                            text = "Audit IPv4, IPv6 addresses, or Domain names to inspect threat confidence scores, geolocation, ISP, Tor node status, and attack history.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(horizontal = 16.dp)
@@ -165,7 +199,7 @@ fun CheckScreen(
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "Auditing IP against AbuseIPDB threat intelligence...",
+                            text = "Auditing target against AbuseIPDB threat intelligence...",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -212,7 +246,7 @@ fun CheckScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Header Card with Gauge & Bookmark
+                    // Header Card with Gauge & Bookmark/Share
                     item {
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -243,14 +277,34 @@ fun CheckScreen(
                                         )
                                     }
 
-                                    IconButton(
-                                        onClick = { viewModel.toggleBookmark(data) }
-                                    ) {
-                                        Icon(
-                                            imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                                            contentDescription = "Bookmark",
-                                            tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
+                                    Row {
+                                        IconButton(
+                                            onClick = {
+                                                val briefing = viewModel.generateShareableReport(data)
+                                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                                    type = "text/plain"
+                                                    putExtra(Intent.EXTRA_SUBJECT, "Sentinel-IP Threat Intelligence Report")
+                                                    putExtra(Intent.EXTRA_TEXT, briefing)
+                                                }
+                                                context.startActivity(Intent.createChooser(shareIntent, "Share Threat Intelligence"))
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Share,
+                                                contentDescription = "Share Threat Report",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+
+                                        IconButton(
+                                            onClick = { viewModel.toggleBookmark(data) }
+                                        ) {
+                                            Icon(
+                                                imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                                                contentDescription = "Bookmark",
+                                                tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
                                     }
                                 }
 
