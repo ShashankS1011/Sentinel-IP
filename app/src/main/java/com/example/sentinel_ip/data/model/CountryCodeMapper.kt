@@ -32,10 +32,6 @@ object CountryCodeMapper {
         "BANGLADESH" to "BD", "BGD" to "BD", "BD" to "BD"
     )
 
-    /**
-     * Converts a single country name, short code, or comma-separated string (e.g. "INDIA, USA, DE")
-     * into ISO 3166-1 alpha-2 comma-separated codes (e.g. "IN,US,DE").
-     */
     fun mapToIsoCodes(input: String?): String? {
         if (input.isNullOrBlank()) return null
 
@@ -48,9 +44,18 @@ object CountryCodeMapper {
         return if (mappedCodes.isNotEmpty()) mappedCodes.joinToString(",") else input.trim().uppercase(Locale.ROOT)
     }
 
-    /**
-     * Returns full display country name for an ISO code if known.
-     */
+    fun getCountryFlagEmoji(isoCode: String?): String {
+        if (isoCode.isNullOrBlank() || isoCode.length != 2) return "🌐"
+        val codeUpper = isoCode.trim().uppercase(Locale.ROOT)
+        return try {
+            val firstChar = Character.codePointAt(codeUpper, 0) - 0x41 + 0x1F1E6
+            val secondChar = Character.codePointAt(codeUpper, 1) - 0x41 + 0x1F1E6
+            String(Character.toChars(firstChar)) + String(Character.toChars(secondChar))
+        } catch (_: Exception) {
+            "🌐"
+        }
+    }
+
     fun getCountryName(isoCode: String?): String {
         if (isoCode.isNullOrBlank()) return "Global"
         val codeUpper = isoCode.trim().uppercase(Locale.ROOT)

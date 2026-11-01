@@ -1,5 +1,6 @@
 package com.example.sentinel_ip.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,13 +22,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Hub
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -38,10 +42,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.sentinel_ip.data.model.CountryCodeMapper
 import com.example.sentinel_ip.data.model.ReportedAddress
 import com.example.sentinel_ip.ui.components.StatCard
 import com.example.sentinel_ip.ui.components.getThreatColor
@@ -73,7 +80,9 @@ fun SubnetScreen(
             defaultLimit = 100
         )
 
-        // Subnet Search Input Bar
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Subnet Input Field
         OutlinedTextField(
             value = networkInput,
             onValueChange = { networkInput = it },
@@ -179,6 +188,9 @@ fun SubnetScreen(
 
             is UiState.Success -> {
                 val data = state.data
+                val reportedCount = data.reportedAddress.size
+                val possibleHosts = if (data.numPossibleHosts > 0) data.numPossibleHosts else 256
+                val infectionRatio = (reportedCount.toFloat() / possibleHosts.toFloat() * 100f).coerceIn(0f, 100f)
 
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -196,6 +208,55 @@ fun SubnetScreen(
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                // Infection Ratio Visualizer Card
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "Infection Ratio (${String.format("%.1f", infectionRatio)}%)",
+                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                            Text(
+                                                text = "$reportedCount / $possibleHosts Hosts Flagged",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.height(6.dp))
+
+                                        LinearProgressIndicator(
+                                            progress = { infectionRatio / 100f },
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(6.dp)
+                                                .clip(RoundedCornerShape(3.dp)),
+                                            color = if (infectionRatio > 10f) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                                            trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                                        )
+
+                                        if (!data.minAddress.isNullOrBlank() && !data.maxAddress.isNullOrBlank()) {
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Text(
+                                                text = "Address Space: ${data.minAddress} -> ${data.maxAddress}",
+                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 Row(
@@ -215,15 +276,6 @@ fun SubnetScreen(
                                         modifier = Modifier.weight(1f)
                                     )
                                 }
-
-                                if (!data.addressSpaceDesc.isNullOrBlank()) {
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = "Address Space: ${data.addressSpaceDesc}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
                             }
                         }
                     }
@@ -232,7 +284,8 @@ fun SubnetScreen(
                         Text(
                             text = "Reported Malicious Hosts (${data.reportedAddress.size})",
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(start = 4.dp)
                         )
                     }
 
@@ -249,7 +302,7 @@ fun SubnetScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "No malicious or abusive hosts detected in this subnet range.",
+                                        text = "No infected host addresses reported in this subnet range.",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -257,12 +310,10 @@ fun SubnetScreen(
                             }
                         }
                     } else {
-                        items(data.reportedAddress) { host ->
-                            SubnetHostRow(host = host, onClick = { onSelectIpForAudit(host.ipAddress) })
+                        items(data.reportedAddress) { item ->
+                            SubnetHostRow(item = item, onClick = { onSelectIpForAudit(item.ipAddress) })
                         }
                     }
-
-                    item { Spacer(modifier = Modifier.height(16.dp)) }
                 }
             }
         }
@@ -270,11 +321,9 @@ fun SubnetScreen(
 }
 
 @Composable
-fun SubnetHostRow(
-    host: ReportedAddress,
-    onClick: () -> Unit
-) {
-    val threatColor = getThreatColor(host.abuseConfidenceScore)
+fun SubnetHostRow(item: ReportedAddress, onClick: () -> Unit) {
+    val threatColor = getThreatColor(item.numReports)
+    val countryFlag = CountryCodeMapper.getCountryFlagEmoji(item.countryCode)
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -292,24 +341,31 @@ fun SubnetHostRow(
         ) {
             Column {
                 Text(
-                    text = host.ipAddress,
+                    text = item.ipAddress,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "${host.numReports} Reports - Most Recent: ${host.mostRecentReport?.take(10) ?: "Recent"}",
+                    text = "Country: $countryFlag ${CountryCodeMapper.getCountryName(item.countryCode)} (${item.countryCode ?: "N/A"})",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            Text(
-                text = "${host.abuseConfidenceScore}%",
-                style = MaterialTheme.typography.titleSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = threatColor
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(threatColor.copy(alpha = 0.15f))
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "${item.numReports} Reports",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = threatColor
+                    )
                 )
-            )
+            }
         }
     }
 }
