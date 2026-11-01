@@ -233,7 +233,7 @@ fun SettingsDialog(
                         }
                     }
 
-                    // Cyber Humor & About Card
+                    // Architecture & Engine Card
                     Card(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                         shape = RoundedCornerShape(10.dp)
@@ -248,20 +248,14 @@ fun SettingsDialog(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Technical Intelligence & Humor",
+                                    text = "Engine & Architecture",
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "\"Making SSH brute-forcers and port scanners rethink their career choices since 2026.\"",
-                                style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic, fontSize = 11.sp),
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Tested against 1,000,000 angry botnets and 0 false positives during coffee breaks. Built with Kotlin & Compose.",
+                                text = "Engineered in 100% Kotlin with Jetpack Compose Material 3, MVVM Architecture, Retrofit 2, and local Room Database caching.",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
