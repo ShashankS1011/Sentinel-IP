@@ -21,7 +21,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 import java.net.InetAddress
@@ -44,7 +46,7 @@ data class BulkAuditResult(
 )
 
 class AbuseRepository(
-    private val context: Context,
+    context: Context,
     private val preferencesManager: PreferencesManager
 ) {
 
@@ -54,9 +56,14 @@ class AbuseRepository(
     val apiKeyFlow: Flow<String> = preferencesManager.apiKeyFlow
     val rateLimitInfoFlow = ApiClient.rateLimitInfo
 
-    // --- ROOM BOOKMARKS FLOW ---
-    val roomBookmarksFlow: Flow<List<BookmarkedIp>> = roomDao.getAllBookmarks().map { list ->
-        list.map { entity ->
+    private val _roomBookmarksState = MutableStateFlow<List<BookmarkedIp>>(emptyList())
+    val roomBookmarksFlow: StateFlow<List<BookmarkedIp>> = _roomBookmarksState.asStateFlow()
+
+    private val _roomSearchHistoryState = MutableStateFlow<List<SearchHistoryEntity>>(emptyList())
+    val roomSearchHistoryFlow: StateFlow<List<SearchHistoryEntity>> = _roomSearchHistoryState.asStateFlow()
+
+    suspend fun refreshBookmarks() = withContext(Dispatchers.IO) {
+        val list = roomDao.allBookmarks.map { entity ->
             BookmarkedIp(
                 ipAddress = entity.ipAddress,
                 abuseConfidenceScore = entity.abuseConfidenceScore,
@@ -64,10 +71,12 @@ class AbuseRepository(
                 isp = entity.isp
             )
         }
+        _roomBookmarksState.value = list
     }
 
-    // --- ROOM SEARCH HISTORY FLOW ---
-    val roomSearchHistoryFlow: Flow<List<SearchHistoryEntity>> = roomDao.getSearchHistory()
+    suspend fun refreshHistory() = withContext(Dispatchers.IO) {
+        _roomSearchHistoryState.value = roomDao.searchHistory
+    }
 
     suspend fun saveApiKey(key: String) {
         preferencesManager.saveApiKey(key)
@@ -100,8 +109,10 @@ class AbuseRepository(
 
         // Cache result in Room for offline resilience
         if (result is ApiResult.Success) {
-            val json = gson.toJson(result.data)
-            roomDao.cacheResponse(OfflineCacheEntity(ipAddress = ipAddress, jsonResponse = json))
+            withContext(Dispatchers.IO) {
+                val json = gson.toJson(result.data)
+                roomDao.cacheResponse(OfflineCacheEntity(ipAddress, json, System.currentTimeMillis()))
+            }
         }
 
         return result
@@ -195,21 +206,24 @@ class AbuseRepository(
     }
 
     // --- ROOM BOOKMARK & HISTORY ACTIONS ---
-    suspend fun toggleBookmark(bookmark: BookmarkedIpEntity) {
+    suspend fun toggleBookmark(bookmark: BookmarkedIpEntity) = withContext(Dispatchers.IO) {
         if (roomDao.isBookmarked(bookmark.ipAddress)) {
             roomDao.deleteBookmark(bookmark.ipAddress)
         } else {
             roomDao.insertBookmark(bookmark)
         }
+        refreshBookmarks()
     }
 
-    suspend fun addSearchHistory(query: String, resolvedIp: String?) {
-        if (query.isBlank()) return
-        roomDao.insertHistory(SearchHistoryEntity(query = query.trim(), resolvedIp = resolvedIp))
+    suspend fun addSearchHistory(query: String, resolvedIp: String?) = withContext(Dispatchers.IO) {
+        if (query.isBlank()) return@withContext
+        roomDao.insertHistory(SearchHistoryEntity(0, query.trim(), resolvedIp, System.currentTimeMillis()))
+        refreshHistory()
     }
 
-    suspend fun clearHistory() {
+    suspend fun clearHistory() = withContext(Dispatchers.IO) {
         roomDao.clearHistory()
+        refreshHistory()
     }
 
     private suspend fun <T, R> safeApiCall(

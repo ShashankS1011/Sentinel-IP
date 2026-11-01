@@ -111,6 +111,8 @@ class SentinelViewModel(application: Application) : AndroidViewModel(application
 
     init {
         viewModelScope.launch {
+            repository.refreshBookmarks()
+            repository.refreshHistory()
             apiKey.collect { key ->
                 if (key.isNotBlank()) {
                     fetchBlacklist()
@@ -239,11 +241,12 @@ class SentinelViewModel(application: Application) : AndroidViewModel(application
     fun toggleBookmark(checkData: CheckData) {
         viewModelScope.launch {
             val entity = BookmarkedIpEntity(
-                ipAddress = checkData.ipAddress,
-                abuseConfidenceScore = checkData.abuseConfidenceScore,
-                countryCode = checkData.countryCode,
-                isp = checkData.isp,
-                domain = checkData.domain
+                checkData.ipAddress,
+                checkData.abuseConfidenceScore,
+                checkData.countryCode,
+                checkData.isp,
+                checkData.domain,
+                System.currentTimeMillis()
             )
             repository.toggleBookmark(entity)
         }
