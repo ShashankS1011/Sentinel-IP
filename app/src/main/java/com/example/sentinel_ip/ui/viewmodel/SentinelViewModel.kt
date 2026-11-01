@@ -110,9 +110,11 @@ class SentinelViewModel(application: Application) : AndroidViewModel(application
     val reportState: StateFlow<UiState<ReportResponseData>> = _reportState.asStateFlow()
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             repository.refreshBookmarks()
             repository.refreshHistory()
+        }
+        viewModelScope.launch {
             apiKey.collect { key ->
                 if (key.isNotBlank()) {
                     fetchBlacklist()
