@@ -184,10 +184,11 @@ class SentinelViewModel(application: Application) : AndroidViewModel(application
     ) {
         viewModelScope.launch {
             _blacklistState.value = UiState.Loading
+            val mappedCountries = com.example.sentinel_ip.data.model.CountryCodeMapper.mapToIsoCodes(onlyCountries)
             when (val result = repository.getBlacklist(
                 confidenceMinimum = confidenceMinimum,
                 limit = limit,
-                onlyCountries = onlyCountries,
+                onlyCountries = mappedCountries,
                 ipVersion = ipVersion
             )) {
                 is ApiResult.Success -> _blacklistState.value = UiState.Success(result.data.data)
