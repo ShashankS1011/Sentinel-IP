@@ -112,7 +112,8 @@ fun SentinelApp(viewModel: SentinelViewModel) {
                     onNavigateToReport = { ip ->
                         reportPrefilledIp = ip
                         navController.navigate(Screen.Report.route)
-                    }
+                    },
+                    onOpenSettings = { showSettingsDialog = true }
                 )
             }
 
@@ -122,7 +123,8 @@ fun SentinelApp(viewModel: SentinelViewModel) {
                     onSelectIpForAudit = { ip ->
                         viewModel.auditIp(ip)
                         navController.navigate(Screen.Check.route)
-                    }
+                    },
+                    onOpenSettings = { showSettingsDialog = true }
                 )
             }
 
@@ -132,7 +134,8 @@ fun SentinelApp(viewModel: SentinelViewModel) {
                     onSelectIpForAudit = { ip ->
                         viewModel.auditIp(ip)
                         navController.navigate(Screen.Check.route)
-                    }
+                    },
+                    onOpenSettings = { showSettingsDialog = true }
                 )
             }
 
@@ -142,14 +145,16 @@ fun SentinelApp(viewModel: SentinelViewModel) {
                     onSelectIpForAudit = { ip ->
                         viewModel.auditIp(ip)
                         navController.navigate(Screen.Check.route)
-                    }
+                    },
+                    onOpenSettings = { showSettingsDialog = true }
                 )
             }
 
             composable(Screen.Report.route) {
                 ReportScreen(
                     viewModel = viewModel,
-                    prefilledIp = reportPrefilledIp
+                    prefilledIp = reportPrefilledIp,
+                    onOpenSettings = { showSettingsDialog = true }
                 )
             }
 

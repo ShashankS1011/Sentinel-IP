@@ -246,16 +246,21 @@ class AbuseRepository(
 
     private fun <T> parseErrorMessage(response: Response<T>): String {
         return try {
+            if (response.code() == 401 || response.code() == 403) {
+                return "API Key missing or invalid. Please tap Settings (top right) to enter your AbuseIPDB API key."
+            }
             val errorBodyStr = response.errorBody()?.string()
             if (!errorBodyStr.isNullOrBlank()) {
                 val errorResponse = gson.fromJson(errorBodyStr, ApiErrorResponse::class.java)
                 val detail = errorResponse?.errors?.firstOrNull()?.detail
                 if (!detail.isNullOrBlank()) {
+                    if (detail.contains("Authentication failed", ignoreCase = true) || detail.contains("API key", ignoreCase = true)) {
+                        return "API Key missing or invalid. Please tap Settings (top right) to enter your AbuseIPDB API key."
+                    }
                     return detail
                 }
             }
             when (response.code()) {
-                401, 403 -> "Invalid or missing AbuseIPDB API Key. Please check your key in settings."
                 429 -> "Daily API rate limit exceeded. Please try again later or upgrade your key."
                 422 -> "Unprocessable Entity: Check query parameters."
                 else -> "Server error ${response.code()}: ${response.message()}"
