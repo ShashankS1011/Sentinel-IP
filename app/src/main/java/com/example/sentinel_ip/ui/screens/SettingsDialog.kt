@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.KeyOff
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,7 +31,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -46,9 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -92,10 +88,10 @@ fun SettingsDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // API Key Field
+                // API Key Input Card
                 Column {
                     Text(
-                        text = "AbuseIPDB API Key",
+                        text = "Your AbuseIPDB API Key",
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -104,7 +100,7 @@ fun SettingsDialog(
                         value = inputKey,
                         onValueChange = { inputKey = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Paste your API Key") },
+                        placeholder = { Text("Paste your personal free API Key") },
                         visualTransformation = if (isKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { isKeyVisible = !isKeyVisible }) {
@@ -123,60 +119,10 @@ fun SettingsDialog(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = if (inputKey == com.example.sentinel_ip.BuildConfig.ABUSEIPDB_API_KEY && inputKey.isNotBlank())
-                            "Active Key: Pre-configured from local.properties"
-                        else
-                            "Active Key: Custom user override",
+                        text = if (inputKey.isNotBlank()) "Key configured securely in device storage" else "No API key configured",
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                        color = MaterialTheme.colorScheme.primary
+                        color = if (inputKey.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                     )
-                }
-
-                // Rate Limit Metric
-                rateLimitInfo?.let { limit ->
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.Speed,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = "Daily Rate Limit Quota",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                                Text(
-                                    text = "${limit.remaining} / ${limit.limit} Remaining",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            val progress = if (limit.limit > 0) limit.remaining.toFloat() / limit.limit.toFloat() else 1f
-                            LinearProgressIndicator(
-                                progress = { progress },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(6.dp)
-                                    .clip(RoundedCornerShape(3.dp)),
-                                color = MaterialTheme.colorScheme.primary,
-                                trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
-                            )
-                        }
-                    }
                 }
 
                 // Get Free Key Button
@@ -189,7 +135,7 @@ fun SettingsDialog(
                 ) {
                     Icon(imageVector = Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Get Free Key from AbuseIPDB Dashboard")
+                    Text("Get a Free API Key from AbuseIPDB")
                 }
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
@@ -205,7 +151,7 @@ fun SettingsDialog(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "About Sentinel-IP & Privacy Assurance",
+                            text = "About Sentinel-IP & Security",
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -226,23 +172,23 @@ fun SettingsDialog(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Your Safety & Privacy",
+                                    text = "Your Safety & Key Privacy",
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "- Direct TLS Encryption: All API calls travel strictly over encrypted HTTPS to AbuseIPDB.\n" +
-                                       "- Zero Telemetry: No tracking, analytics, or user identifiers are ever collected or sent to external servers.\n" +
-                                       "- Local Storage: Your API key, search history, and bookmarks stay 100% on your device in private DataStore memory.",
+                                text = "- Private Device Storage: Your API key is stored 100% locally in private DataStore memory on your phone.\n" +
+                                       "- Direct TLS Encryption: Queries connect directly to AbuseIPDB over encrypted HTTPS.\n" +
+                                       "- Zero External Tracking: No third-party servers, analytics, or telemetry.",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
 
-                    // Architecture & Engine Card
+                    // Engine Card
                     Card(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                         shape = RoundedCornerShape(10.dp)
@@ -264,7 +210,7 @@ fun SettingsDialog(
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "Engineered in 100% Kotlin with Jetpack Compose Material 3, MVVM Architecture, Retrofit 2, and local Room Database caching.",
+                                text = "Engineered in 100% Kotlin with Jetpack Compose Material 3, MVVM Architecture, Retrofit 2, and Room Database caching.",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
