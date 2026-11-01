@@ -165,7 +165,7 @@ fun BlacklistScreen(
                         OutlinedTextField(
                             value = countryFilter,
                             onValueChange = { countryFilter = it.uppercase() },
-                            placeholder = { Text("Countries (e.g. US,DE)") },
+                            placeholder = { Text("Country Name / Code (e.g. INDIA, USA, DE)") },
                             modifier = Modifier.weight(1f),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
@@ -342,8 +342,9 @@ fun BlacklistItemRow(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 if (!item.countryCode.isNullOrBlank() || !item.lastReportedAt.isNullOrBlank()) {
+                    val countryName = com.example.sentinel_ip.data.model.CountryCodeMapper.getCountryName(item.countryCode)
                     Text(
-                        text = "Country: ${item.countryCode ?: "N/A"} - Last: ${item.lastReportedAt?.take(10) ?: "Recent"}",
+                        text = "Country: $countryName (${item.countryCode ?: "N/A"}) - Last: ${item.lastReportedAt?.take(10) ?: "Recent"}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
