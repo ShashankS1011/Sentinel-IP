@@ -184,6 +184,10 @@ class SentinelViewModel(application: Application) : AndroidViewModel(application
         ipVersion: Int? = null
     ) {
         viewModelScope.launch {
+            if (apiKey.value.isBlank()) {
+                _blacklistState.value = UiState.Error("API Key missing or invalid. Please tap Settings (top right) to enter your AbuseIPDB API key.")
+                return@launch
+            }
             _blacklistState.value = UiState.Loading
             val mappedCountries = com.example.sentinel_ip.data.model.CountryCodeMapper.mapToIsoCodes(onlyCountries)
             when (val result = repository.getBlacklist(

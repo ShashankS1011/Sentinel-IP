@@ -63,7 +63,8 @@ import com.example.sentinel_ip.ui.viewmodel.UiState
 @Composable
 fun BlacklistScreen(
     viewModel: SentinelViewModel,
-    onSelectIpForAudit: (String) -> Unit
+    onSelectIpForAudit: (String) -> Unit,
+    onOpenSettings: () -> Unit
 ) {
     val blacklistState by viewModel.blacklistState.collectAsState()
     val endpointQuotas by viewModel.endpointQuotas.collectAsState()
@@ -253,14 +254,18 @@ fun BlacklistScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp),
+                        .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = state.message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    if (state.message.contains("API Key", ignoreCase = true) || state.message.contains("Authentication failed", ignoreCase = true)) {
+                        com.example.sentinel_ip.ui.components.ApiKeyPromptCard(onOpenSettings = onOpenSettings)
+                    } else {
+                        Text(
+                            text = state.message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 

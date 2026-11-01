@@ -51,7 +51,8 @@ import com.example.sentinel_ip.ui.viewmodel.UiState
 @Composable
 fun SubnetScreen(
     viewModel: SentinelViewModel,
-    onSelectIpForAudit: (String) -> Unit
+    onSelectIpForAudit: (String) -> Unit,
+    onOpenSettings: () -> Unit
 ) {
     var networkInput by remember { mutableStateOf("") }
     val subnetState by viewModel.subnetState.collectAsState()
@@ -158,12 +159,21 @@ fun SubnetScreen(
             }
 
             is UiState.Error -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = state.message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (state.message.contains("API Key", ignoreCase = true) || state.message.contains("Authentication failed", ignoreCase = true)) {
+                        com.example.sentinel_ip.ui.components.ApiKeyPromptCard(onOpenSettings = onOpenSettings)
+                    } else {
+                        Text(
+                            text = state.message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 
