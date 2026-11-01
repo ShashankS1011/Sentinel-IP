@@ -55,6 +55,7 @@ class AbuseRepository(
 
     val apiKeyFlow: Flow<String> = preferencesManager.apiKeyFlow
     val rateLimitInfoFlow = ApiClient.rateLimitInfo
+    val endpointQuotasFlow = ApiClient.endpointQuotas
 
     private val _roomBookmarksState = MutableStateFlow<List<BookmarkedIp>>(emptyList())
     val roomBookmarksFlow: StateFlow<List<BookmarkedIp>> = _roomBookmarksState.asStateFlow()

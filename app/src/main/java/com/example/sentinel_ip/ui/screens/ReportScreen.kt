@@ -59,6 +59,7 @@ fun ReportScreen(
     var commentInput by remember { mutableStateOf("") }
     val selectedCategories = remember { mutableStateListOf<Int>() }
     val reportState by viewModel.reportState.collectAsState()
+    val endpointQuotas by viewModel.endpointQuotas.collectAsState()
 
     Column(
         modifier = Modifier
@@ -67,6 +68,13 @@ fun ReportScreen(
             .verticalScroll(rememberScrollState())
     ) {
         Spacer(modifier = Modifier.height(12.dp))
+
+        // Service Quota Banner
+        com.example.sentinel_ip.ui.components.ServiceQuotaBanner(
+            quota = endpointQuotas["report"],
+            defaultServiceName = "Abuse Reporter Service",
+            defaultLimit = 1000
+        )
 
         // Header Title
         Row(

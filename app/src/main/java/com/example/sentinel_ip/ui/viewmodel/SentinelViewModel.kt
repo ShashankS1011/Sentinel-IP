@@ -46,6 +46,7 @@ class SentinelViewModel(application: Application) : AndroidViewModel(application
     )
 
     val rateLimitInfo = repository.rateLimitInfoFlow
+    val endpointQuotas = repository.endpointQuotasFlow
 
     // --- SORTING & ROOM BOOKMARKS ---
     private val _bookmarkSortOption = MutableStateFlow(BookmarkSortOption.RECENT)

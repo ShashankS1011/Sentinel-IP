@@ -66,6 +66,7 @@ fun BlacklistScreen(
     onSelectIpForAudit: (String) -> Unit
 ) {
     val blacklistState by viewModel.blacklistState.collectAsState()
+    val endpointQuotas by viewModel.endpointQuotas.collectAsState()
     val context = LocalContext.current
 
     var confidenceMinimum by remember { mutableFloatStateOf(90f) }
@@ -78,6 +79,14 @@ fun BlacklistScreen(
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Service Quota Banner
+        com.example.sentinel_ip.ui.components.ServiceQuotaBanner(
+            quota = endpointQuotas["blacklist"],
+            defaultServiceName = "Global Radar Service",
+            defaultLimit = 5
+        )
         Spacer(modifier = Modifier.height(12.dp))
 
         // Header Control Bar

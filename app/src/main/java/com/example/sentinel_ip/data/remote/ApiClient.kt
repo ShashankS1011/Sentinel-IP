@@ -1,5 +1,6 @@
 package com.example.sentinel_ip.data.remote
 
+import com.example.sentinel_ip.data.model.EndpointQuota
 import com.example.sentinel_ip.data.model.RateLimitInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +22,9 @@ object ApiClient {
     private val _rateLimitInfo = MutableStateFlow<RateLimitInfo?>(null)
     val rateLimitInfo: StateFlow<RateLimitInfo?> = _rateLimitInfo.asStateFlow()
 
+    private val _endpointQuotas = MutableStateFlow<Map<String, EndpointQuota>>(EndpointQuota.getDefaultQuotas())
+    val endpointQuotas: StateFlow<Map<String, EndpointQuota>> = _endpointQuotas.asStateFlow()
+
     fun updateApiKey(apiKey: String) {
         currentApiKey = apiKey.trim()
     }
@@ -37,7 +41,7 @@ object ApiClient {
         val request = requestBuilder.build()
         val response = chain.proceed(request)
 
-        // Parse AbuseIPDB Rate Limit Headers
+        // Parse AbuseIPDB Rate Limit Headers Per Service Endpoint
         try {
             val limitStr = response.header("X-RateLimit-Limit")
             val remainingStr = response.header("X-RateLimit-Remaining")
@@ -45,10 +49,33 @@ object ApiClient {
             val retryAfterStr = response.header("Retry-After")
 
             if (limitStr != null || remainingStr != null) {
-                val limit = limitStr?.toIntOrNull() ?: _rateLimitInfo.value?.limit ?: 1000
-                val remaining = remainingStr?.toIntOrNull() ?: _rateLimitInfo.value?.remaining ?: 1000
+                val path = original.url.encodedPath
+                val serviceKey = when {
+                    path.contains("check-block") -> "check-block"
+                    path.contains("check") -> "check"
+                    path.contains("blacklist") -> "blacklist"
+                    path.contains("reports") -> "reports"
+                    path.contains("report") -> "report"
+                    else -> "check"
+                }
+
+                val defaultQuota = EndpointQuota.getDefaultQuotas()[serviceKey] ?: EndpointQuota(serviceKey, "Service", 1000, 1000)
+                val limit = limitStr?.toIntOrNull() ?: defaultQuota.limit
+                val remaining = remainingStr?.toIntOrNull() ?: defaultQuota.remaining
                 val reset = resetStr?.toLongOrNull() ?: 0L
                 val retryAfter = retryAfterStr?.toLongOrNull() ?: 0L
+
+                val updatedQuota = EndpointQuota(
+                    serviceKey = serviceKey,
+                    serviceName = defaultQuota.serviceName,
+                    limit = limit,
+                    remaining = remaining,
+                    resetEpochSeconds = reset
+                )
+
+                val currentMap = _endpointQuotas.value.toMutableMap()
+                currentMap[serviceKey] = updatedQuota
+                _endpointQuotas.value = currentMap
 
                 _rateLimitInfo.value = RateLimitInfo(
                     limit = limit,
