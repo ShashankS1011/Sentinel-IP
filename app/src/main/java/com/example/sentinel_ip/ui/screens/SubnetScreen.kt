@@ -55,6 +55,7 @@ fun SubnetScreen(
 ) {
     var networkInput by remember { mutableStateOf("") }
     val subnetState by viewModel.subnetState.collectAsState()
+    val endpointQuotas by viewModel.endpointQuotas.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
@@ -63,6 +64,13 @@ fun SubnetScreen(
             .padding(horizontal = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(12.dp))
+
+        // Service Quota Banner
+        com.example.sentinel_ip.ui.components.ServiceQuotaBanner(
+            quota = endpointQuotas["check-block"],
+            defaultServiceName = "Subnet Scanner Service",
+            defaultLimit = 100
+        )
 
         // Subnet Search Input Bar
         OutlinedTextField(

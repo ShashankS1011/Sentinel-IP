@@ -76,6 +76,7 @@ fun CheckScreen(
     val checkState by viewModel.checkState.collectAsState()
     val bookmarks by viewModel.roomBookmarks.collectAsState()
     val resolvedTargetBanner by viewModel.resolvedTargetBanner.collectAsState()
+    val endpointQuotas by viewModel.endpointQuotas.collectAsState()
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -85,6 +86,15 @@ fun CheckScreen(
             .padding(horizontal = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(12.dp))
+
+        // Service Quota Banner
+        com.example.sentinel_ip.ui.components.ServiceQuotaBanner(
+            quota = endpointQuotas["check"],
+            defaultServiceName = "IP Audit Service",
+            defaultLimit = 1000
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         // Search Bar
         OutlinedTextField(

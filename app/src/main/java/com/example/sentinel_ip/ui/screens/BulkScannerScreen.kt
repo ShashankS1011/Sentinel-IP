@@ -56,6 +56,7 @@ fun BulkScannerScreen(
 ) {
     var rawLogInput by remember { mutableStateOf("") }
     val bulkState by viewModel.bulkAuditState.collectAsState()
+    val endpointQuotas by viewModel.endpointQuotas.collectAsState()
     val context = LocalContext.current
 
     Column(
@@ -64,6 +65,13 @@ fun BulkScannerScreen(
             .padding(horizontal = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(12.dp))
+
+        // Service Quota Banner
+        com.example.sentinel_ip.ui.components.ServiceQuotaBanner(
+            quota = endpointQuotas["check"],
+            defaultServiceName = "Bulk Audit Service",
+            defaultLimit = 1000
+        )
 
         // Header Title
         Row(verticalAlignment = Alignment.CenterVertically) {
