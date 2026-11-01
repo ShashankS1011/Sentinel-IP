@@ -121,6 +121,15 @@ fun SettingsDialog(
                         ),
                         shape = RoundedCornerShape(10.dp)
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = if (inputKey == com.example.sentinel_ip.BuildConfig.ABUSEIPDB_API_KEY && inputKey.isNotBlank())
+                            "Active Key: Pre-configured from local.properties"
+                        else
+                            "Active Key: Custom user override",
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
 
                 // Rate Limit Metric
