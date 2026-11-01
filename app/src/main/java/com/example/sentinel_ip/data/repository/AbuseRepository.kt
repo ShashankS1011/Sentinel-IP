@@ -1,6 +1,11 @@
 package com.example.sentinel_ip.data.repository
 
+import android.content.Context
 import com.example.sentinel_ip.data.local.PreferencesManager
+import com.example.sentinel_ip.data.local.room.BookmarkedIpEntity
+import com.example.sentinel_ip.data.local.room.OfflineCacheEntity
+import com.example.sentinel_ip.data.local.room.SearchHistoryEntity
+import com.example.sentinel_ip.data.local.room.SentinelDatabase
 import com.example.sentinel_ip.data.model.ApiErrorResponse
 import com.example.sentinel_ip.data.model.BlacklistResponse
 import com.example.sentinel_ip.data.model.BookmarkedIp
@@ -9,11 +14,17 @@ import com.example.sentinel_ip.data.model.CheckData
 import com.example.sentinel_ip.data.model.ClearAddressResponse
 import com.example.sentinel_ip.data.model.ReportResponse
 import com.example.sentinel_ip.data.model.ReportsResponse
-import com.example.sentinel_ip.data.model.SearchHistoryItem
 import com.example.sentinel_ip.data.remote.ApiClient
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import retrofit2.Response
+import java.net.InetAddress
 
 sealed class ApiResult<out T> {
     data class Success<out T>(val data: T) : ApiResult<T>()
@@ -21,25 +32,101 @@ sealed class ApiResult<out T> {
     object Loading : ApiResult<Nothing>()
 }
 
-class AbuseRepository(private val preferencesManager: PreferencesManager) {
+data class ResolvedTarget(
+    val query: String,
+    val resolvedIp: String,
+    val isDomainResolved: Boolean
+)
+
+data class BulkAuditResult(
+    val totalExtractedIps: Int,
+    val auditResults: List<CheckData>
+)
+
+class AbuseRepository(
+    private val context: Context,
+    private val preferencesManager: PreferencesManager
+) {
 
     private val gson = Gson()
+    private val roomDao = SentinelDatabase.getDatabase(context).sentinelDao()
 
     val apiKeyFlow: Flow<String> = preferencesManager.apiKeyFlow
-    val bookmarksFlow: Flow<List<BookmarkedIp>> = preferencesManager.bookmarkedIpsFlow
-    val searchHistoryFlow: Flow<List<SearchHistoryItem>> = preferencesManager.searchHistoryFlow
     val rateLimitInfoFlow = ApiClient.rateLimitInfo
+
+    // --- ROOM BOOKMARKS FLOW ---
+    val roomBookmarksFlow: Flow<List<BookmarkedIp>> = roomDao.getAllBookmarks().map { list ->
+        list.map { entity ->
+            BookmarkedIp(
+                ipAddress = entity.ipAddress,
+                abuseConfidenceScore = entity.abuseConfidenceScore,
+                countryCode = entity.countryCode,
+                isp = entity.isp
+            )
+        }
+    }
+
+    // --- ROOM SEARCH HISTORY FLOW ---
+    val roomSearchHistoryFlow: Flow<List<SearchHistoryEntity>> = roomDao.getSearchHistory()
 
     suspend fun saveApiKey(key: String) {
         preferencesManager.saveApiKey(key)
         ApiClient.updateApiKey(key)
     }
 
+    // --- RESOLVE DOMAIN TO IP ---
+    suspend fun resolveTarget(input: String): ResolvedTarget = withContext(Dispatchers.IO) {
+        val trimmed = input.trim()
+        val ipRegex = Regex("""^(?:[0-9]{1,3}\.){3}[0-9]{1,3}|(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}${'$'}""")
+
+        if (ipRegex.matches(trimmed)) {
+            ResolvedTarget(query = trimmed, resolvedIp = trimmed, isDomainResolved = false)
+        } else {
+            try {
+                val address = InetAddress.getByName(trimmed)
+                val resolvedIp = address.hostAddress ?: trimmed
+                ResolvedTarget(query = trimmed, resolvedIp = resolvedIp, isDomainResolved = true)
+            } catch (_: Exception) {
+                ResolvedTarget(query = trimmed, resolvedIp = trimmed, isDomainResolved = false)
+            }
+        }
+    }
+
     suspend fun checkIp(ipAddress: String, maxAgeInDays: Int = 30): ApiResult<CheckData> {
-        return safeApiCall(
+        val result = safeApiCall(
             call = { ApiClient.apiService.checkIp(ipAddress = ipAddress, maxAgeInDays = maxAgeInDays) },
             transform = { response -> response.data ?: throw Exception("No check data returned") }
         )
+
+        // Cache result in Room for offline resilience
+        if (result is ApiResult.Success) {
+            val json = gson.toJson(result.data)
+            roomDao.cacheResponse(OfflineCacheEntity(ipAddress = ipAddress, jsonResponse = json))
+        }
+
+        return result
+    }
+
+    // --- BULK IP PARSER & CONCURRENT AUDIT ---
+    suspend fun auditBulkIps(rawLogText: String): ApiResult<BulkAuditResult> = coroutineScope {
+        val ipRegex = Regex("""\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b""")
+        val extractedIps = ipRegex.findAll(rawLogText).map { it.value }.distinct().toList()
+
+        if (extractedIps.isEmpty()) {
+            return@coroutineScope ApiResult.Error("No valid IPv4 addresses found in the provided log text.")
+        }
+
+        val deferredAudits = extractedIps.take(10).map { ip ->
+            async {
+                when (val res = checkIp(ip)) {
+                    is ApiResult.Success -> res.data
+                    else -> null
+                }
+            }
+        }
+
+        val results = deferredAudits.awaitAll().filterNotNull().sortedByDescending { it.abuseConfidenceScore }
+        ApiResult.Success(BulkAuditResult(totalExtractedIps = extractedIps.size, auditResults = results))
     }
 
     suspend fun getReports(ipAddress: String, page: Int = 1, perPage: Int = 25): ApiResult<ReportsResponse> {
@@ -107,16 +194,22 @@ class AbuseRepository(private val preferencesManager: PreferencesManager) {
         )
     }
 
-    suspend fun toggleBookmark(bookmark: BookmarkedIp) {
-        preferencesManager.toggleBookmark(bookmark)
+    // --- ROOM BOOKMARK & HISTORY ACTIONS ---
+    suspend fun toggleBookmark(bookmark: BookmarkedIpEntity) {
+        if (roomDao.isBookmarked(bookmark.ipAddress)) {
+            roomDao.deleteBookmark(bookmark.ipAddress)
+        } else {
+            roomDao.insertBookmark(bookmark)
+        }
     }
 
-    suspend fun addSearchHistory(query: String) {
-        preferencesManager.addSearchHistory(query)
+    suspend fun addSearchHistory(query: String, resolvedIp: String?) {
+        if (query.isBlank()) return
+        roomDao.insertHistory(SearchHistoryEntity(query = query.trim(), resolvedIp = resolvedIp))
     }
 
     suspend fun clearHistory() {
-        preferencesManager.clearHistory()
+        roomDao.clearHistory()
     }
 
     private suspend fun <T, R> safeApiCall(

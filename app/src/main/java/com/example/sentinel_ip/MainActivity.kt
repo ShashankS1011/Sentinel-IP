@@ -23,6 +23,7 @@ import com.example.sentinel_ip.ui.navigation.Screen
 import com.example.sentinel_ip.ui.navigation.SentinelBottomNavBar
 import com.example.sentinel_ip.ui.navigation.SentinelTopAppBar
 import com.example.sentinel_ip.ui.screens.BlacklistScreen
+import com.example.sentinel_ip.ui.screens.BulkScannerScreen
 import com.example.sentinel_ip.ui.screens.CheckScreen
 import com.example.sentinel_ip.ui.screens.HistoryScreen
 import com.example.sentinel_ip.ui.screens.ReportScreen
@@ -121,6 +122,16 @@ fun SentinelApp(viewModel: SentinelViewModel) {
 
             composable(Screen.Subnet.route) {
                 SubnetScreen(
+                    viewModel = viewModel,
+                    onSelectIpForAudit = { ip ->
+                        viewModel.auditIp(ip)
+                        navController.navigate(Screen.Check.route)
+                    }
+                )
+            }
+
+            composable(Screen.Bulk.route) {
+                BulkScannerScreen(
                     viewModel = viewModel,
                     onSelectIpForAudit = { ip ->
                         viewModel.auditIp(ip)
