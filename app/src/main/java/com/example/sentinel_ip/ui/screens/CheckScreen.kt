@@ -237,7 +237,7 @@ fun CheckScreen(
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
                                         Text(
-                                            text = "IPv${data.ipVersion ?: 4} • ${if (data.isPublic == true) "Public Address" else "Private/Internal"}",
+                                            text = "IPv${data.ipVersion ?: 4} - ${if (data.isPublic == true) "Public Address" else "Private/Internal"}",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )

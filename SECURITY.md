@@ -4,10 +4,10 @@
 
 Only the latest release version of **Sentinel-IP** receives security updates and patches.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| < 1.0.0 | :x:                |
+| Version | Supported |
+| ------- | --------- |
+| 1.x.x   | Yes       |
+| < 1.0.0 | No        |
 
 ## Reporting a Vulnerability
 
@@ -18,8 +18,8 @@ We take the security of **Sentinel-IP** and its users seriously. If you discover
 3. Provide a detailed description of the vulnerability, steps to reproduce, and potential impact.
 
 ### Response & Patch Process
-- We will acknowledge receipt of your vulnerability report within 24–48 hours.
-- A patch will be developed, tested, and pushed in a patch release (`v1.0.x`).
+- We will acknowledge receipt of your vulnerability report within 24-48 hours.
+- A patch will be developed, tested, and pushed in a patch release (`v1.x.x`).
 - Full attribution will be provided to reporters (unless requested otherwise).
 
-Thank you for keeping Sentinel-IP secure! 🛡️
+Thank you for keeping Sentinel-IP secure!

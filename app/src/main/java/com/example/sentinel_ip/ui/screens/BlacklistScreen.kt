@@ -343,7 +343,7 @@ fun BlacklistItemRow(
                 )
                 if (!item.countryCode.isNullOrBlank() || !item.lastReportedAt.isNullOrBlank()) {
                     Text(
-                        text = "Country: ${item.countryCode ?: "N/A"} • Last: ${item.lastReportedAt?.take(10) ?: "Recent"}",
+                        text = "Country: ${item.countryCode ?: "N/A"} - Last: ${item.lastReportedAt?.take(10) ?: "Recent"}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

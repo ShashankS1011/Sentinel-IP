@@ -236,7 +236,7 @@ fun BookmarkRow(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "ISP: ${item.isp ?: "Unknown"} • ${item.countryCode ?: "Global"}",
+                    text = "ISP: ${item.isp ?: "Unknown"} - ${item.countryCode ?: "Global"}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
