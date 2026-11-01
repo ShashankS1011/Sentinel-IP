@@ -59,17 +59,6 @@
 
 ---
 
-## API Key Setup (`local.properties`)
-
-1. Obtain a free API key from the [AbuseIPDB Developer Dashboard](https://www.abuseipdb.com/account/api).
-2. Add your key to `local.properties` in the project root:
-   ```properties
-   ABUSEIPDB_API_KEY=your_actual_api_key_here
-   ```
-3. Build the app using Android Studio or `./gradlew assembleDebug`. `app/build.gradle.kts` will read the key and inject it into `BuildConfig.ABUSEIPDB_API_KEY`. Alternatively, enter your key inside the app Settings dialog.
-
----
-
 ## Tech Stack & Architecture
 
 * **Language**: Kotlin 2.2
@@ -78,20 +67,6 @@
 * **State Management**: MVVM Architecture + Kotlin Coroutines & `StateFlow`
 * **Persistence**: Room Database (`SentinelDatabase`) + Jetpack DataStore
 * **Theme**: Dark Red Security Theme (`#FF2B4A` Neon Cyber Red)
-
----
-
-## Versioning & Contribution Workflow
-
-This project strictly adheres to **[Semantic Versioning (SemVer)](https://semver.org/)** (`vMAJOR.MINOR.PATCH`).
-
-### Issue-First Workflow Rules:
-1. **Always Create an Issue First**: Before making any fixes or additions, open a GitHub Issue describing the task.
-2. **Assignee**: Assign the issue to **`@ShashankS1011`**.
-3. **Threading**: Reply to any existing comments before commenting or resolving.
-4. **Fix & Close**: Push changes referencing the issue ID and close the issue upon resolution.
-
-For details, refer to [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
