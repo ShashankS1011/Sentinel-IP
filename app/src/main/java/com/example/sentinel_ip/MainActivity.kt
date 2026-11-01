@@ -43,15 +43,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SentinelIPTheme {
-                var isSplashActive by remember { mutableStateOf(true) }
-
-                if (isSplashActive) {
-                    SplashScreen(
-                        onSplashFinished = { isSplashActive = false }
-                    )
-                } else {
-                    SentinelApp(viewModel = viewModel)
-                }
+                SentinelApp(viewModel = viewModel)
             }
         }
     }
@@ -61,7 +53,7 @@ class MainActivity : ComponentActivity() {
 fun SentinelApp(viewModel: SentinelViewModel) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = backStackEntry?.destination?.route ?: Screen.Check.route
+    val currentRoute = backStackEntry?.destination?.route ?: Screen.Splash.route
 
     val rateLimitInfo by viewModel.rateLimitInfo.collectAsState()
     var showSettingsDialog by remember { mutableStateOf(false) }
@@ -77,29 +69,43 @@ fun SentinelApp(viewModel: SentinelViewModel) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            SentinelTopAppBar(
-                rateLimitInfo = rateLimitInfo,
-                onOpenSettings = { showSettingsDialog = true }
-            )
+            if (currentRoute != Screen.Splash.route) {
+                SentinelTopAppBar(
+                    rateLimitInfo = rateLimitInfo,
+                    onOpenSettings = { showSettingsDialog = true }
+                )
+            }
         },
         bottomBar = {
-            SentinelBottomNavBar(
-                currentRoute = currentRoute,
-                onNavigate = { route ->
-                    navController.navigate(route) {
-                        popUpTo(Screen.Check.route) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+            if (currentRoute != Screen.Splash.route) {
+                SentinelBottomNavBar(
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo(Screen.Check.route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Check.route,
+            startDestination = Screen.Splash.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(Screen.Splash.route) {
+                SplashScreen(
+                    onSplashFinished = {
+                        navController.navigate(Screen.Check.route) {
+                            popUpTo(Screen.Splash.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
             composable(Screen.Check.route) {
                 CheckScreen(
                     viewModel = viewModel,

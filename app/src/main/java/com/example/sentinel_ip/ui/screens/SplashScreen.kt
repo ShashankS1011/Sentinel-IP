@@ -3,7 +3,9 @@ package com.example.sentinel_ip.ui.screens
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Icon
@@ -25,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,34 +45,28 @@ fun SplashScreen(
 ) {
     val scale = remember { Animatable(0.6f) }
     val alpha = remember { Animatable(0f) }
-    val pulseAlpha = remember { Animatable(0.3f) }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "pulseTransition")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
 
     LaunchedEffect(Unit) {
-        // Smooth scale & fade-in animation
         scale.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 800)
-        )
-        alpha.animateTo(
             targetValue = 1f,
             animationSpec = tween(durationMillis = 600)
         )
-    }
-
-    LaunchedEffect(Unit) {
-        // Continuous subtle pulsing glow for the shield background
-        pulseAlpha.animateTo(
-            targetValue = 0.8f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 1000, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
-            )
+        alpha.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 500)
         )
-    }
-
-    LaunchedEffect(Unit) {
-        // Wait 2 seconds before proceeding to main UI
-        delay(2000)
+        delay(1500)
         onSplashFinished()
     }
 
@@ -104,7 +100,7 @@ fun SplashScreen(
                     modifier = Modifier
                         .size(140.dp)
                         .scale(1.1f)
-                        .alpha(pulseAlpha.value * 0.4f)
+                        .alpha(pulseAlpha * 0.4f)
                         .background(
                             color = MaterialTheme.colorScheme.primary,
                             shape = CircleShape
@@ -132,7 +128,7 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // App Name with Cyber Aesthetics
+            // App Name
             Text(
                 text = "SENTINEL - IP",
                 style = MaterialTheme.typography.headlineLarge.copy(
@@ -159,7 +155,7 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Loading Bar & Status Indicator
+            // Loading Bar
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
