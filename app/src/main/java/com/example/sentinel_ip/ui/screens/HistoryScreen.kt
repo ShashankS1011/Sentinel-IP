@@ -1,6 +1,8 @@
 package com.example.sentinel_ip.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -281,6 +283,7 @@ fun BookmarkRow(
     onDelete: () -> Unit
 ) {
     val threatColor = getThreatColor(item.abuseConfidenceScore)
+    val countryFlag = com.example.sentinel_ip.data.model.CountryCodeMapper.getCountryFlagEmoji(item.countryCode)
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -297,13 +300,33 @@ fun BookmarkRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = item.ipAddress,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    if (item.abuseConfidenceScore >= 50) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(MaterialTheme.colorScheme.error.copy(alpha = 0.2f))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "CRITICAL",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
                 Text(
-                    text = item.ipAddress,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "ISP: ${item.isp ?: "Unknown"} - ${item.countryCode ?: "Global"}",
+                    text = "Country: $countryFlag ${item.countryCode ?: "Global"} - ISP: ${item.isp ?: "Unknown"}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -311,7 +334,7 @@ fun BookmarkRow(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "${item.abuseConfidenceScore}%",
+                    text = "${item.abuseConfidenceScore}% Threat",
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = threatColor

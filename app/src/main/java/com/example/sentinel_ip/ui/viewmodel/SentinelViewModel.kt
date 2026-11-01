@@ -110,6 +110,13 @@ class SentinelViewModel(application: Application) : AndroidViewModel(application
     private val _reportState = MutableStateFlow<UiState<ReportResponseData>>(UiState.Idle)
     val reportState: StateFlow<UiState<ReportResponseData>> = _reportState.asStateFlow()
 
+    // --- COMPARE STATES ---
+    private val _compareStateA = MutableStateFlow<UiState<CheckData>>(UiState.Idle)
+    val compareStateA: StateFlow<UiState<CheckData>> = _compareStateA.asStateFlow()
+
+    private val _compareStateB = MutableStateFlow<UiState<CheckData>>(UiState.Idle)
+    val compareStateB: StateFlow<UiState<CheckData>> = _compareStateB.asStateFlow()
+
     init {
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             repository.refreshBookmarks()
@@ -158,6 +165,35 @@ class SentinelViewModel(application: Application) : AndroidViewModel(application
                 is ApiResult.Error -> _checkState.value = UiState.Error(result.message)
                 ApiResult.Loading -> _checkState.value = UiState.Loading
             }
+        }
+    }
+
+    fun compareIps(inputA: String, inputB: String) {
+        if (inputA.isBlank() || inputB.isBlank()) return
+        viewModelScope.launch {
+            _compareStateA.value = UiState.Loading
+            _compareStateB.value = UiState.Loading
+
+            val jobA = launch {
+                val targetA = repository.resolveTarget(inputA)
+                when (val resultA = repository.checkIp(targetA.resolvedIp)) {
+                    is ApiResult.Success -> _compareStateA.value = UiState.Success(resultA.data)
+                    is ApiResult.Error -> _compareStateA.value = UiState.Error(resultA.message)
+                    ApiResult.Loading -> _compareStateA.value = UiState.Loading
+                }
+            }
+
+            val jobB = launch {
+                val targetB = repository.resolveTarget(inputB)
+                when (val resultB = repository.checkIp(targetB.resolvedIp)) {
+                    is ApiResult.Success -> _compareStateB.value = UiState.Success(resultB.data)
+                    is ApiResult.Error -> _compareStateB.value = UiState.Error(resultB.message)
+                    ApiResult.Loading -> _compareStateB.value = UiState.Loading
+                }
+            }
+
+            jobA.join()
+            jobB.join()
         }
     }
 

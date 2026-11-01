@@ -25,6 +25,7 @@ import com.example.sentinel_ip.ui.navigation.SentinelTopAppBar
 import com.example.sentinel_ip.ui.screens.BlacklistScreen
 import com.example.sentinel_ip.ui.screens.BulkScannerScreen
 import com.example.sentinel_ip.ui.screens.CheckScreen
+import com.example.sentinel_ip.ui.screens.CompareScreen
 import com.example.sentinel_ip.ui.screens.HistoryScreen
 import com.example.sentinel_ip.ui.screens.ReportScreen
 import com.example.sentinel_ip.ui.screens.SettingsDialog
@@ -113,6 +114,13 @@ fun SentinelApp(viewModel: SentinelViewModel) {
                         reportPrefilledIp = ip
                         navController.navigate(Screen.Report.route)
                     },
+                    onOpenSettings = { showSettingsDialog = true }
+                )
+            }
+
+            composable(Screen.Compare.route) {
+                CompareScreen(
+                    viewModel = viewModel,
                     onOpenSettings = { showSettingsDialog = true }
                 )
             }
