@@ -4,7 +4,7 @@ Thank you for contributing to **Sentinel-IP**! To maintain code quality and trac
 
 ---
 
-### 📋 Issue-First Development Workflow
+### Issue-First Development Workflow
 
 1. **Create an Issue First**: Before making any bug fixes, optimizations, or feature additions, always create a GitHub Issue first explaining the problem or proposed feature.
 2. **Assignee**: ALWAYS assign the issue to **`@ShashankS1011`**.
@@ -20,12 +20,12 @@ Thank you for contributing to **Sentinel-IP**! To maintain code quality and trac
 
 ---
 
-### 🏷️ Semantic Versioning Norms
+### Semantic Versioning Norms
 
 All Sentinel-IP updates follow **Semantic Versioning (SemVer)** (`vMAJOR.MINOR.PATCH`):
 
-* **MAJOR (`v1.0.0` → `v2.0.0`)**: Incompatible API changes or major architectural redesigns.
-* **MINOR (`v1.0.0` → `v1.1.0`)**: Adding new features in a backward-compatible manner.
-* **PATCH (`v1.0.0` → `v1.0.1`)**: Backward-compatible bug fixes and stability improvements.
+* **MAJOR (`v1.0.0` -> `v2.0.0`)**: Incompatible API changes or major architectural redesigns.
+* **MINOR (`v1.0.0` -> `v1.1.0`)**: Adding new features in a backward-compatible manner.
+* **PATCH (`v1.0.0` -> `v1.0.1`)**: Backward-compatible bug fixes and stability improvements.
 
 Every update increments the app version in `app/build.gradle.kts` and creates a corresponding GitHub Release with build artifacts.

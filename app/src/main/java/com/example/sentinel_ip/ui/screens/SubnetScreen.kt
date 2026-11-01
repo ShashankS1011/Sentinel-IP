@@ -279,7 +279,7 @@ fun SubnetHostRow(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "${host.numReports} Reports • Most Recent: ${host.mostRecentReport?.take(10) ?: "Recent"}",
+                    text = "${host.numReports} Reports - Most Recent: ${host.mostRecentReport?.take(10) ?: "Recent"}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

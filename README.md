@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛡️ Sentinel-IP
+# Sentinel-IP
 
 ### *Cybersecurity Threat Intelligence & AbuseIPDB Audit Tool for Android*
 
@@ -12,7 +12,7 @@
 
 <br/>
 
-[![Download APK](https://img.shields.io/badge/⚡_DOWNLOAD_SENTINEL--IP_APK-FF2B4A?style=for-the-badge&logo=android&logoColor=white)](https://github.com/ShashankS1011/Sentinel-IP/releases/download/v1.0.0/app-debug.apk)
+[![Download APK](https://img.shields.io/badge/DOWNLOAD_SENTINEL--IP_APK-FF2B4A?style=for-the-badge&logo=android&logoColor=white)](https://github.com/ShashankS1011/Sentinel-IP/releases/latest)
 
 *Audit IPv4/IPv6 threats, monitor global attack radars, scan subnets, and report malicious actors directly from your Android device.*
 
@@ -20,42 +20,60 @@
 
 </div>
 
-## 📌 Overview
+## Overview
 
 **Sentinel-IP** is a native, modern Android application engineered in **100% Kotlin** and **Jetpack Compose** with a dark crimson security theme. Powered by the **AbuseIPDB API v2**, Sentinel-IP equips cybersecurity researchers, sysadmins, and security enthusiasts with real-time threat intelligence to audit IP addresses, monitor active global attack feeds, inspect CIDR subnet blocks, and report malicious activity directly to the AbuseIPDB network.
 
 ---
 
-## ⚡ Key Features
+## Key Features
 
-* 📊 **Security Dashboard & Daily Rate Limit Monitor**: Tracks daily query quotas (`X-RateLimit-Remaining` / `X-RateLimit-Limit`) in real-time from response headers.
-* 🔍 **IP Threat Audit (`/api/v2/check`)**:
-  * **Animated Threat Gauge**: Visual confidence score meter (🟢 Safe 0–24%, 🟡 Suspicious 25–74%, 🔴 Critical 75–100%).
+* **Security Dashboard & Daily Rate Limit Monitor**: Tracks daily query quotas (`X-RateLimit-Remaining` / `X-RateLimit-Limit`) in real-time from response headers.
+* **IP Threat Audit (`/api/v2/check`)**:
+  * **Animated Threat Gauge**: Visual confidence score meter (Safe 0-24%, Suspicious 25-74%, Critical 75-100%).
   * **Network & Geolocation Intelligence**: Displays ISP, country, domain name, usage type (Data Center, Mobile ISP, Fixed Line, etc.), Tor exit node flag, and whitelist status.
   * **Attack Logs**: Detailed history of reported attacks with reporter location, comments, and threat categories.
-* 🌐 **Global Threat Radar (`/api/v2/blacklist`)**:
+* **Global Threat Radar (`/api/v2/blacklist`)**:
   * Live feed of worldwide malicious IPs.
-  * Filter by minimum confidence score (25–100%), country codes (e.g. `US`, `DE`), and IP version (IPv4/IPv6).
+  * Filter by minimum confidence score (25-100%), country codes (e.g. `US`, `DE`), and IP version (IPv4/IPv6).
   * One-tap copy/export list formatted for `iptables` and firewalls.
-* 🕸️ **Subnet / CIDR Scanner (`/api/v2/check-block`)**:
+* **Subnet / CIDR Scanner (`/api/v2/check-block`)**:
   * Scan CIDR network ranges (e.g., `118.25.6.0/24`).
   * Inspect netmasks, total host capacities, and infected hosts list.
-* 🚨 **IP Abuse Reporter (`/api/v2/report`)**:
+* **IP Abuse Reporter (`/api/v2/report`)**:
   * Report abusive IPs with multi-select threat categories (SSH Brute-Force, Port Scanning, DDoS, Web Spam, Hacking, Vulnerability Exploits, IoT Attacks, etc.) and log comments.
-* 📌 **Bookmarks & Search History**:
+* **Bookmarks & Search History**:
   * Save high-risk targets locally and review search logs via Jetpack DataStore.
 
 ---
 
-## 📥 Download & Installation
+## User Safety & Privacy Guarantees
 
-1. Download the latest APK release from the button above or [GitHub Releases](https://github.com/ShashankS1011/Sentinel-IP/releases/latest).
-2. Install `app-debug.apk` on your Android device (Android 7.0 / API 24+ required).
-3. Open **Sentinel-IP** and enter your AbuseIPDB API Key in the **Settings (⚙️)** dialog or pre-configure it in `local.properties`.
+* **TLS 1.3 Encrypted HTTPS**: All network calls connect directly to official AbuseIPDB REST endpoints over encrypted HTTPS.
+* **Zero Telemetry / No Tracking**: Sentinel-IP does not collect, log, store, or sell any personal data, device identifiers, or IP lookup history on external servers.
+* **On-Device Storage**: Your API key, search history, and bookmarks stay 100% stored in local private DataStore memory on your physical device.
 
 ---
 
-## 🔑 API Key Setup (`local.properties`)
+## Technical Humor & About
+
+> *"Making SSH brute-forcers and port scanners rethink their career choices since 2026."*
+
+Tested against 1,000,000 angry botnets and 0 false positives during coffee breaks. Built with Kotlin and Jetpack Compose for cybersecurity professionals.
+
+* **GitHub Repository**: [github.com/ShashankS1011/Sentinel-IP](https://github.com/ShashankS1011/Sentinel-IP)
+
+---
+
+## Download & Installation
+
+1. Download the latest APK release from the button above or [GitHub Releases](https://github.com/ShashankS1011/Sentinel-IP/releases/latest).
+2. Install `app-debug.apk` or `app-release-unsigned.apk` on your Android device (Android 7.0 / API 24+ required).
+3. Open **Sentinel-IP** and enter your AbuseIPDB API Key in the **Settings** dialog or pre-configure it in `local.properties`.
+
+---
+
+## API Key Setup (`local.properties`)
 
 For developers building from source:
 
@@ -68,7 +86,7 @@ For developers building from source:
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## Tech Stack & Architecture
 
 * **Language**: Kotlin 2.2
 * **UI Framework**: Jetpack Compose + Material 3 + Material Extended Icons
@@ -79,11 +97,11 @@ For developers building from source:
 
 ---
 
-## 🔄 Versioning & Contribution Workflow
+## Versioning & Contribution Workflow
 
 This project strictly adheres to **[Semantic Versioning (SemVer)](https://semver.org/)** (`vMAJOR.MINOR.PATCH`).
 
-### 📋 Issue-First Workflow Rules:
+### Issue-First Workflow Rules:
 1. **Always Create an Issue First**: Before making any fixes or additions, open a GitHub Issue describing the task.
 2. **Assignee**: Assign the issue to **`@ShashankS1011`**.
 3. **Threading**: Reply to any existing comments before commenting or resolving.
@@ -93,18 +111,18 @@ For details, refer to [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
-## 🛡️ Security Policy
+## Security Policy
 
 Please read [SECURITY.md](SECURITY.md) for details on reporting security vulnerabilities.
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ & Kotlin for Cybersecurity Professionals by <a href="https://github.com/ShashankS1011">@ShashankS1011</a></sub>
+  <sub>Built with Kotlin for Cybersecurity Professionals by <a href="https://github.com/ShashankS1011">@ShashankS1011</a></sub>
 </div>
