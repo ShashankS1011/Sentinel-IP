@@ -1,6 +1,5 @@
 package com.example.sentinel_ip.data.remote
 
-import com.example.sentinel_ip.BuildConfig
 import com.example.sentinel_ip.data.model.RateLimitInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,14 +16,13 @@ object ApiClient {
     private const val BASE_URL = "https://api.abuseipdb.com/"
 
     @Volatile
-    private var currentApiKey: String = BuildConfig.ABUSEIPDB_API_KEY
+    private var currentApiKey: String = ""
 
     private val _rateLimitInfo = MutableStateFlow<RateLimitInfo?>(null)
     val rateLimitInfo: StateFlow<RateLimitInfo?> = _rateLimitInfo.asStateFlow()
 
     fun updateApiKey(apiKey: String) {
-        val trimmed = apiKey.trim()
-        currentApiKey = if (trimmed.isNotBlank()) trimmed else BuildConfig.ABUSEIPDB_API_KEY
+        currentApiKey = apiKey.trim()
     }
 
     private val authAndRateLimitInterceptor = Interceptor { chain ->
@@ -32,9 +30,8 @@ object ApiClient {
         val requestBuilder = original.newBuilder()
             .header("Accept", "application/json")
 
-        val keyToUse = if (currentApiKey.isNotBlank()) currentApiKey else BuildConfig.ABUSEIPDB_API_KEY
-        if (keyToUse.isNotBlank()) {
-            requestBuilder.header("Key", keyToUse)
+        if (currentApiKey.isNotBlank()) {
+            requestBuilder.header("Key", currentApiKey)
         }
 
         val request = requestBuilder.build()
