@@ -19,7 +19,7 @@ object ApiClient {
     @Volatile
     private var currentApiKey: String = ""
 
-    private val _rateLimitInfo = MutableStateFlow<RateLimitInfo?>(null)
+    private val _rateLimitInfo = MutableStateFlow<RateLimitInfo?>(RateLimitInfo(1000, 1000))
     val rateLimitInfo: StateFlow<RateLimitInfo?> = _rateLimitInfo.asStateFlow()
 
     private val _endpointQuotas = MutableStateFlow<Map<String, EndpointQuota>>(EndpointQuota.getDefaultQuotas())
@@ -44,22 +44,27 @@ object ApiClient {
         // Parse AbuseIPDB Rate Limit Headers Per Service Endpoint
         try {
             val limitStr = response.header("X-RateLimit-Limit")
+                ?: response.header("x-ratelimit-limit")
             val remainingStr = response.header("X-RateLimit-Remaining")
+                ?: response.header("x-ratelimit-remaining")
             val resetStr = response.header("X-RateLimit-Reset")
+                ?: response.header("x-ratelimit-reset")
             val retryAfterStr = response.header("Retry-After")
+                ?: response.header("retry-after")
+
+            val path = original.url.encodedPath
+            val serviceKey = when {
+                path.contains("check-block") -> "check-block"
+                path.contains("check") -> "check"
+                path.contains("blacklist") -> "blacklist"
+                path.contains("reports") -> "reports"
+                path.contains("report") -> "report"
+                else -> "check"
+            }
+
+            val defaultQuota = EndpointQuota.getDefaultQuotas()[serviceKey] ?: EndpointQuota(serviceKey, "Service", 1000, 1000)
 
             if (limitStr != null || remainingStr != null) {
-                val path = original.url.encodedPath
-                val serviceKey = when {
-                    path.contains("check-block") -> "check-block"
-                    path.contains("check") -> "check"
-                    path.contains("blacklist") -> "blacklist"
-                    path.contains("reports") -> "reports"
-                    path.contains("report") -> "report"
-                    else -> "check"
-                }
-
-                val defaultQuota = EndpointQuota.getDefaultQuotas()[serviceKey] ?: EndpointQuota(serviceKey, "Service", 1000, 1000)
                 val limit = limitStr?.toIntOrNull() ?: defaultQuota.limit
                 val remaining = remainingStr?.toIntOrNull() ?: defaultQuota.remaining
                 val reset = resetStr?.toLongOrNull() ?: 0L
@@ -82,6 +87,21 @@ object ApiClient {
                     remaining = remaining,
                     resetEpochSeconds = reset,
                     retryAfterSeconds = retryAfter
+                )
+            } else if (response.isSuccessful) {
+                // If API headers are absent in response, decrement remaining counter by 1
+                val currentQuota = _endpointQuotas.value[serviceKey] ?: defaultQuota
+                val newRemaining = (currentQuota.remaining - 1).coerceAtLeast(0)
+                val updatedQuota = currentQuota.copy(remaining = newRemaining)
+
+                val currentMap = _endpointQuotas.value.toMutableMap()
+                currentMap[serviceKey] = updatedQuota
+                _endpointQuotas.value = currentMap
+
+                _rateLimitInfo.value = RateLimitInfo(
+                    limit = currentQuota.limit,
+                    remaining = newRemaining,
+                    resetEpochSeconds = currentQuota.resetEpochSeconds
                 )
             }
         } catch (_: Exception) {
