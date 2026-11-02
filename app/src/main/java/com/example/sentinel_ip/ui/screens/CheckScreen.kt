@@ -346,19 +346,35 @@ fun CheckScreen(
 
                                 Spacer(modifier = Modifier.height(16.dp))
 
-                                Button(
-                                    onClick = { onNavigateToReport(data.ipAddress) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                                    shape = RoundedCornerShape(8.dp),
-                                    modifier = Modifier.fillMaxWidth()
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Security,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Report Abuse for this IP", fontWeight = FontWeight.Bold)
+                                    Button(
+                                        onClick = { onNavigateToReport(data.ipAddress) },
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Security,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("Report Abuse", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            com.example.sentinel_ip.util.PdfReportGenerator.generateAndSharePdfReport(context, data)
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Export PDF Report", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                    }
                                 }
                             }
                         }
@@ -381,7 +397,7 @@ fun CheckScreen(
                             ) {
                                 StatCard(
                                     title = "Country",
-                                    value = "${data.countryName ?: "Unknown"} (${data.countryCode ?: "N/A"})",
+                                    value = "${com.example.sentinel_ip.data.model.CountryCodeMapper.getCountryFlagEmoji(data.countryCode)} ${data.countryName ?: "Unknown"} (${data.countryCode ?: "N/A"})",
                                     icon = Icons.Default.Flag,
                                     modifier = Modifier.weight(1f)
                                 )
