@@ -142,6 +142,11 @@ fun BlacklistScreen(
             }
         }
 
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Live Threat Heatmap
+        com.example.sentinel_ip.ui.components.ThreatHeatmap()
+
         // Expandable Filter Settings
         AnimatedVisibility(visible = showFilterPanel) {
             Card(

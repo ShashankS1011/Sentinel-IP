@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CheckCircle
@@ -197,6 +198,39 @@ fun ReportScreen(
             ),
             shape = RoundedCornerShape(12.dp)
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Quick Comment Templates
+        Text(
+            text = "Quick Comment Templates:",
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            val templates = listOf(
+                "SSH Brute-Force attack detected on port 22",
+                "DDoS traffic flood targeting web server",
+                "Unauthorized port scanning & probing",
+                "Malicious web crawler / scraper bot"
+            )
+            templates.forEach { template ->
+                FilterChip(
+                    selected = commentInput == template,
+                    onClick = { commentInput = template },
+                    label = { Text(template, fontSize = 10.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
 
