@@ -28,7 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sentinel_ip.data.model.RateLimitInfo
+
 
 @Composable
 fun SentinelBottomNavBar(
@@ -75,7 +75,6 @@ fun SentinelBottomNavBar(
 
 @Composable
 fun SentinelTopAppBar(
-    rateLimitInfo: RateLimitInfo?,
     onOpenSettings: () -> Unit
 ) {
     Row(
@@ -104,37 +103,19 @@ fun SentinelTopAppBar(
             }
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            rateLimitInfo?.let { limit ->
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "${limit.remaining}/${limit.limit} Quota",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .clickable(onClick = onOpenSettings)
-                    .padding(8.dp)
-            ) {
-                Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable(onClick = onOpenSettings)
+                .padding(8.dp)
+        ) {
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Default.Settings,
+                contentDescription = "Settings",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
