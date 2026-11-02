@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,7 +55,6 @@ fun SentinelApp(viewModel: SentinelViewModel) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route ?: Screen.Splash.route
 
-    val rateLimitInfo by viewModel.rateLimitInfo.collectAsState()
     var showSettingsDialog by remember { mutableStateOf(false) }
     var reportPrefilledIp by remember { mutableStateOf("") }
 
@@ -72,7 +70,6 @@ fun SentinelApp(viewModel: SentinelViewModel) {
         topBar = {
             if (currentRoute != Screen.Splash.route) {
                 SentinelTopAppBar(
-                    rateLimitInfo = rateLimitInfo,
                     onOpenSettings = { showSettingsDialog = true }
                 )
             }
