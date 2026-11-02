@@ -62,6 +62,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.datastore.preferences)
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
+    implementation("androidx.fragment:fragment-ktx:1.8.6")
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
