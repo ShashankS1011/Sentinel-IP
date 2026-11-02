@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.sentinel_ip.BuildConfig
 import com.example.sentinel_ip.data.model.BookmarkedIp
 import com.example.sentinel_ip.data.model.SearchHistoryItem
 import com.google.gson.Gson
@@ -26,7 +27,12 @@ class PreferencesManager(private val context: Context) {
     }
 
     val apiKeyFlow: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[API_KEY] ?: ""
+        val savedKey = prefs[API_KEY]
+        if (!savedKey.isNullOrBlank()) {
+            savedKey
+        } else {
+            BuildConfig.ABUSEIPDB_API_KEY
+        }
     }
 
     suspend fun saveApiKey(key: String) {
