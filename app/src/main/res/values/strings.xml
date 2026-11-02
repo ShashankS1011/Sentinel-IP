@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Sentinel-IP</string>
+    <string name="shortcut_audit_short">Audit IP</string>
+    <string name="shortcut_audit_long">Audit Threat Intelligence</string>
+    <string name="shortcut_radar_short">Global Radar</string>
+    <string name="shortcut_radar_long">View Global Threat Radar</string>
 </resources>
